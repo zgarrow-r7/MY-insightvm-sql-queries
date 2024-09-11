@@ -1,0 +1,18 @@
+SELECT 
+    ds.name AS "Software Name",
+    SUM(CASE WHEN dv.cvss_v3_score BETWEEN 0 AND 3.9 THEN 1 ELSE 0 END) AS "Low",
+    SUM(CASE WHEN dv.cvss_v3_score BETWEEN 4.0 AND 6.9 THEN 1 ELSE 0 END) AS "Medium",
+    SUM(CASE WHEN dv.cvss_v3_score BETWEEN 7.0 AND 8.9 THEN 1 ELSE 0 END) AS "High",
+    SUM(CASE WHEN dv.cvss_v3_score >= 9.0 THEN 1 ELSE 0 END) AS "Critical"
+FROM 
+    dim_asset_software das
+JOIN 
+    dim_software ds ON das.software_id = ds.software_id
+JOIN 
+    fact_asset_vulnerability_finding favf ON das.asset_id = favf.asset_id
+JOIN 
+    dim_vulnerability dv ON favf.vulnerability_id = dv.vulnerability_id
+GROUP BY 
+    ds.name
+ORDER BY 
+    "Critical" DESC, "High" DESC, "Medium" DESC, "Low" DESC;
